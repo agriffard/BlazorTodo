@@ -1,0 +1,121 @@
+﻿@using BlazorTodo.Shared
+@page "/todo/{filter}"
+@{
+    int itemsLeft = todos.Count(t => !t.IsDone);
+    int indexTodo = 1;
+}
+<h1>Todo</h1>
+<ul class="list-group">
+    <li class="list-group-item">
+        <form>
+        @if(todos.Any())
+        { 
+        <input type="checkbox" id="CheckAll" title="Check all" @onchange(newValue => CheckAll((bool)newValue)) />
+        }
+        <input autofocus placeholder="Something todo" @bind(newTodo) />
+        <button @onclick(AddTodo) type="submit" class="btn btn-primary btn-xs">Add todo</button>
+        </form>
+    </li>
+    @foreach (var todo in todos)
+    {
+        @if (IsVisible(todo))
+        {
+        <li class="list-group-item">
+            <form>
+                <input type="checkbox" @bind(todo.IsDone) title="Check if done" />  
+                <button @onclick(() => RemoveTodo(todo)) class="btn btn-danger btn-xs" title="Remove"><span class='glyphicon glyphicon-remove'></span></button>
+                @if (todo.IsInEdit)
+                {
+                <input @bind(todo.Title) title="double-click to edit" />
+                }
+                else
+                {
+                <span style="@(todo.IsDone ? "text-decoration:line-through" : "")" ondblclick="document.getElementById('btnEdit@(indexTodo.ToString())').click();">@todo.Title</span>
+                }
+            
+                @if (todo.IsInEdit)
+                {
+                    <button @onclick(() => SaveTodo(todo)) type="submit" class="btn btn-info btn-xs" style="display:none"><span class='glyphicon glyphicon-floppy-disk'></span></button>
+                }
+                else
+                {
+                    <button id="btnEdit@(indexTodo.ToString())" class="btn btn-info btn-xs" @onclick(() => EditTodo(todo)) style="display:none"><span class='glyphicon glyphicon-edit'></span></button>
+                }
+            </form>
+        </li>
+        }
+        indexTodo += 1;
+    }
+</ul>
+<p>
+    @if(todos.Any())
+    { 
+    <span class="badge badge-primary badge-pill">@itemsLeft</span> <span>item@(itemsLeft > 1 ? "s" : "") left.</span>
+
+    <a href="/todo/all" style="@(string.IsNullOrEmpty(filter) || filter == "all" ? "font-weight:bold": "")">All</a>
+    <a href="/todo/active" style="@(filter == "active" ? "font-weight:bold": "")">Active</a>
+    <a href="/todo/completed" style="@(filter == "completed" ? "font-weight:bold'": "")">Completed</a>
+    }
+    @if(todos.Any(t => t.IsDone))
+    { 
+    <button @onclick(ClearCompleted) class="btn btn-primary btn-xs">Clear completed</button>
+    }
+    <br />
+    <i>Double-click to edit a todo</i>
+</p>
+
+@functions {
+    List<TodoItem> todos = new List<TodoItem>();
+    string newTodo;
+    public string filter { get; set; }
+
+    void AddTodo()
+    {
+        if (!String.IsNullOrWhiteSpace(newTodo))
+        {
+            todos.Add(new TodoItem { Title = newTodo });
+            newTodo = "";
+        }
+    }
+    
+    void EditTodo(TodoItem todo)
+    {
+        if (todo != null)
+        {
+            todo.IsInEdit = true;
+        }
+    }
+
+    void SaveTodo(TodoItem todo)
+    {
+        if (todo != null)
+        {
+            todo.IsInEdit = false;
+        }
+    }
+    void RemoveTodo(TodoItem todo)
+    {
+        if (todo != null)
+        {
+            todos.Remove(todo);
+        }
+    }
+
+    void CheckAll(bool check)
+    {
+        foreach(TodoItem todo in todos)
+        {
+            todo.IsDone = check;
+        }
+    }
+
+    void ClearCompleted()
+    {
+        todos.RemoveAll(t => t.IsDone);
+    }
+
+    bool IsVisible(TodoItem todo)
+    {
+        return string.IsNullOrEmpty(filter) || filter == "all" || (filter == "active" && !todo.IsDone) || (filter == "completed" && todo.IsDone);
+    }
+}
