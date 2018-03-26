@@ -23,7 +23,6 @@
         <li class="list-group-item">
             <form>
                 <input type="checkbox" @bind(todo.IsDone) title="Check if done" />  
-                <button @onclick(() => RemoveTodo(todo)) class="btn btn-danger btn-xs" title="Remove"><span class='glyphicon glyphicon-remove'></span></button>
                 @if (todo.IsInEdit)
                 {
                 <input @bind(todo.Title) title="double-click to edit" />
@@ -41,6 +40,7 @@
                 {
                     <button id="btnEdit@(indexTodo.ToString())" class="btn btn-info btn-xs" @onclick(() => EditTodo(todo)) style="display:none"><span class='glyphicon glyphicon-edit'></span></button>
                 }
+                <button @onclick(() => RemoveTodo(todo)) class="btn btn-danger btn-xs" title="Remove"><span class='glyphicon glyphicon-remove'></span></button>
             </form>
         </li>
         }
